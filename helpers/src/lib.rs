@@ -11,7 +11,7 @@ pub use std::collections::{BTreeMap, BTreeSet, BinaryHeap, LinkedList, VecDeque}
 pub use std::convert::identity;
 pub use std::fmt::{Debug, Display};
 pub use std::iter::{
-	empty as empty_iter, from_coroutine as gen_iter, from_fn as from_fn_iter, once as once_iter,
+	empty as empty_iter, from_coroutine as coroutine_iter, from_fn as fn_iter, once as once_iter,
 	once_with as once_with_iter, repeat as repeat_iter, repeat_with as repeat_with_iter,
 	successors,
 };
@@ -25,6 +25,11 @@ pub use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 pub use num_integer::*;
 
 pub use primal::*;
+
+/// Short version of [`Default::default`].
+pub fn def<D: Default>() -> D {
+	D::default()
+}
 
 /// Computes the triangular number.
 ///
@@ -60,4 +65,84 @@ pub fn pause() {
 	if line.trim() == "q" {
 		std::process::exit(0)
 	}
+}
+
+/// Creates a [`HashSet`] from a list of values.
+///
+/// # Examples
+///
+/// ```
+/// # use helpers::{hashset, HashSet};
+/// let set = hashset! { 0, 1, 2 };
+/// assert_eq!(set, HashSet::from_iter([0, 1, 2]));
+/// ```
+#[macro_export]
+macro_rules! hashset {
+	($($i:expr),* $(,)?) => {
+		HashSet::from_iter([$($i),*])
+	};
+}
+
+/// Creates a [`HashMap`] from a list of values.
+///
+/// # Examples
+///
+/// ```
+/// # use helpers::{hashmap, HashMap};
+/// let map = hashmap! {
+///     0 => "a",
+///     1 => "b",
+///     2 => "c",
+/// };
+/// assert_eq!(map, HashMap::from_iter([
+///     (0, "a"),
+///     (1, "b"),
+///     (2, "c"),
+/// ]));
+/// ```
+#[macro_export]
+macro_rules! hashmap {
+	($($k:expr => $v:expr),* $(,)?) => {
+		HashMap::from_iter([$(($k, $v)),*])
+	};
+}
+
+/// Creates a [`BTreeSet`] from a list of values.
+///
+/// # Examples
+///
+/// ```
+/// # use helpers::{btreeset, BTreeSet};
+/// let set = btreeset! { 0, 1, 2 };
+/// assert_eq!(set, BTreeSet::from_iter([0, 1, 2]));
+/// ```
+#[macro_export]
+macro_rules! btreeset {
+	($($i:expr),* $(,)?) => {
+		BTreeSet::from_iter([$($i),*])
+	};
+}
+
+/// Creates a [`BTreeMap`] from a list of values.
+///
+/// # Examples
+///
+/// ```
+/// # use helpers::{btreemap, BTreeMap};
+/// let map = btreemap! {
+///     0 => "a",
+///     1 => "b",
+///     2 => "c",
+/// };
+/// assert_eq!(map, BTreeMap::from_iter([
+///     (0, "a"),
+///     (1, "b"),
+///     (2, "c"),
+/// ]));
+/// ```
+#[macro_export]
+macro_rules! btreemap {
+	($($k:expr => $v:expr),* $(,)?) => {
+		BTreeMap::from_iter([$(($k, $v)),*])
+	};
 }
