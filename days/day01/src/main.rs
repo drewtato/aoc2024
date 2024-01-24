@@ -9,7 +9,6 @@
 #![feature(slice_split_once)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(array_try_map)]
-#![feature(slice_first_last_chunk)]
 
 use helpers::*;
 

@@ -27,6 +27,9 @@ const USER_AGENT: &str = "\
 	at github.com/drewtato/aoc2024 \
 ";
 
+/// How long to wait between polls in watch mode
+const WATCH_POLL_TIME: Duration = Duration::from_millis(20);
+
 /// Settings for running AoC. Usually created with [`clap::Parser::parse`].
 #[derive(Debug, Parser)]
 #[command(about = "A runner for Advent of Code", version = clap::crate_version!())]
@@ -86,7 +89,7 @@ pub struct Settings<const YEAR: u32> {
 	pub runner_debug: u8,
 
 	/// Builds the solver with the release profile.
-	#[arg(long)]
+	#[arg(short = 'l', long)]
 	pub release: bool,
 
 	/// Runs the solver anew whenever a change is detected in the input, days,
@@ -159,7 +162,7 @@ impl<const YEAR: u32> Settings<YEAR> {
 			return Ok(());
 		}
 
-		let mut runner_time = Instant::now();
+		let mut runner_start = Instant::now();
 		let mut solver_time = Duration::ZERO;
 
 		debug_println!(self.runner_debug, 2, "{:?}", self);
@@ -191,14 +194,14 @@ impl<const YEAR: u32> Settings<YEAR> {
 			let watch_start = Instant::now();
 			let done = self.watch()?;
 			// Don't count time watching
-			runner_time += watch_start.elapsed();
+			runner_start += watch_start.elapsed();
 
 			if done {
 				break Duration::ZERO;
 			}
 		};
 
-		let runner_time = runner_time.elapsed();
+		let runner_time = runner_start.elapsed();
 		debug_println!(
 			self.runner_debug,
 			1,
@@ -215,18 +218,18 @@ impl<const YEAR: u32> Settings<YEAR> {
 		// will spawn
 		let (input_recv, _) = self.input_channel.get_or_init(|| {
 			let (send, recv) = sync_channel(0);
-			let handle = std::thread::spawn(self.create_input_reader(send));
+			let handle = std::thread::spawn(self.create_input_watcher(send));
 			(recv, handle)
 		});
 
 		let (watcher_recv, _) = self.watcher_channel.get_or_init(|| {
 			let (send, recv) = channel();
-			let watcher = self.create_watcher(send).unwrap();
+			let watcher = self.create_file_watcher(send).unwrap();
 			(recv, watcher)
 		});
 
 		loop {
-			match input_recv.recv_timeout(Duration::from_millis(100)) {
+			match input_recv.recv_timeout(WATCH_POLL_TIME) {
 				Ok(InputMessage::Exit) => return Ok(true),
 				Ok(InputMessage::Rerun) => break,
 				Ok(InputMessage::SetMode(mode)) => {
@@ -246,7 +249,7 @@ impl<const YEAR: u32> Settings<YEAR> {
 		Ok(false)
 	}
 
-	fn create_watcher(&self, send: Sender<Res<()>>) -> Res<RecommendedWatcher> {
+	fn create_file_watcher(&self, send: Sender<Res<()>>) -> Res<RecommendedWatcher> {
 		use notify::EventKind::*;
 
 		let mut watcher =
@@ -267,7 +270,7 @@ impl<const YEAR: u32> Settings<YEAR> {
 		Ok(watcher)
 	}
 
-	fn create_input_reader(&self, send: SyncSender<InputMessage>) -> impl FnOnce() + 'static {
+	fn create_input_watcher(&self, send: SyncSender<InputMessage>) -> impl FnOnce() + 'static {
 		let mut buf = String::new();
 		let stdin = stdin();
 		move || loop {

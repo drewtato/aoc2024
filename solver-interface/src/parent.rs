@@ -25,7 +25,9 @@ impl ParentSolver {
 			.stdout(Stdio::piped());
 
 		if release {
-			process.arg("--release");
+			process.args(["--profile", "day-release"]);
+		} else {
+			process.args(["--profile", "day-dev"]);
 		}
 
 		let mut process = process.spawn()?;
