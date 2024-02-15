@@ -11,9 +11,9 @@ pub use std::collections::{BTreeMap, BTreeSet, BinaryHeap, LinkedList, VecDeque}
 pub use std::convert::identity;
 pub use std::fmt::{Debug, Display};
 pub use std::iter::{
-	empty as empty_iter, from_coroutine as coroutine_iter, from_fn as fn_iter, once as once_iter,
-	once_with as once_with_iter, repeat as repeat_iter, repeat_with as repeat_with_iter,
-	successors,
+    empty as empty_iter, from_coroutine as coroutine_iter, from_fn as fn_iter, once as once_iter,
+    once_with as once_with_iter, repeat as repeat_iter, repeat_with as repeat_with_iter,
+    successors,
 };
 pub use std::mem::{replace, swap, take};
 
@@ -26,9 +26,44 @@ pub use num_integer::*;
 
 pub use primal::*;
 
+pub trait UnwrapDisplay {
+    type Output;
+    /// Like [`Result::unwrap`], but prints with `Display` instead of `Debug`.
+    ///
+    /// # Examples
+    ///
+    /// Unwrapping an `Ok` works normally.
+    ///
+    /// ```
+    /// # use helpers::UnwrapDisplay;
+    /// let opt: Result<i32, &'static str> = Ok(4);
+    /// assert_eq!(4, opt.unwrap_display());
+    /// ```
+    ///
+    /// Unwrapping an `Err` prints using `Display` and panics.
+    ///
+    /// ```should_panic
+    /// # use helpers::UnwrapDisplay;
+    /// let opt: Result<i32, &'static str> = Err("oh no");
+    /// opt.unwrap_display(); // panics
+    /// ```
+    fn unwrap_display(self) -> Self::Output;
+}
+
+impl<T, E> UnwrapDisplay for Result<T, E>
+where
+    E: Display,
+{
+    type Output = T;
+
+    fn unwrap_display(self) -> Self::Output {
+        self.unwrap_or_else(|e| panic!("{e}"))
+    }
+}
+
 /// Short version of [`Default::default`].
 pub fn def<D: Default>() -> D {
-	D::default()
+    D::default()
 }
 
 /// Computes the triangular number.
@@ -42,10 +77,10 @@ pub fn def<D: Default>() -> D {
 /// ```
 pub fn triangular_number<N>(n: N) -> N
 where
-	N: Add<Output = N> + Mul<Output = N> + Div<Output = N> + TryFrom<u8> + Copy,
-	N::Error: Debug,
+    N: Add<Output = N> + Mul<Output = N> + Div<Output = N> + TryFrom<u8> + Copy,
+    N::Error: Debug,
 {
-	n * (n + 1u8.try_into().unwrap()) / 2u8.try_into().unwrap()
+    n * (n + 1u8.try_into().unwrap()) / 2u8.try_into().unwrap()
 }
 
 /// Reads a value from standard input.
@@ -54,17 +89,17 @@ where
 /// resulting string fails.
 pub fn read_value<T>() -> Result<T, T::Err>
 where
-	T: FromStr,
+    T: FromStr,
 {
-	stdin().lines().next().unwrap().unwrap().trim().parse()
+    stdin().lines().next().unwrap().unwrap().trim().parse()
 }
 
 /// Waits for a newline from stdin.
 pub fn pause() {
-	let line = stdin().lines().next().unwrap().unwrap();
-	if line.trim() == "q" {
-		std::process::exit(0)
-	}
+    let line = stdin().lines().next().unwrap().unwrap();
+    if line.trim() == "q" {
+        std::process::exit(0)
+    }
 }
 
 /// Creates a [`HashSet`] from a list of values.
