@@ -33,7 +33,7 @@ const WATCH_POLL_TIME: Duration = Duration::from_millis(20);
 /// Settings for running AoC. Usually created with [`clap::Parser::parse`].
 #[derive(Debug, Parser)]
 #[command(about = "A runner for Advent of Code", version = clap::crate_version!())]
-pub struct Settings<const YEAR: u32> {
+pub struct Settings {
     /// Specify which days to run.
     ///
     /// Passing 0 will run all 25. To run a specific part, pass `day.part`, like
@@ -116,6 +116,10 @@ pub struct Settings<const YEAR: u32> {
     /// Print a shell completion script.
     #[arg(long)]
     pub completions: Option<Shell>,
+
+    /// Override the year.
+    #[arg(long, default_value_t = 2024)]
+    pub year: u32,
 }
 
 /// Mode to run [`Settings`] in.
@@ -152,7 +156,7 @@ macro_rules! debug_println {
 	};
 }
 
-impl<const YEAR: u32> Settings<YEAR> {
+impl Settings {
     pub fn run(&mut self) -> Res<()> {
         if let Some(shell) = self.completions {
             use clap::CommandFactory;
@@ -353,7 +357,7 @@ impl<const YEAR: u32> Settings<YEAR> {
     fn get_input(&mut self, day: u32) -> Res<Vec<u8>> {
         let input_main = input_file_name(day, 0);
         if !input_main.exists() {
-            let time_until_release = time_until_input_is_released(day, YEAR);
+            let time_until_release = time_until_input_is_released(day, self.year);
             // If the puzzle is very far out
             if time_until_release > ChDuration::hours(1) {
                 // eprintln!(
@@ -399,7 +403,7 @@ impl<const YEAR: u32> Settings<YEAR> {
         let api_key = api_key.trim();
 
         // Get main input
-        let url = format!("https://adventofcode.com/{YEAR}/day/{day}/input");
+        let url = format!("https://adventofcode.com/{}/day/{day}/input", self.year);
         eprintln!("Fetching {url}");
 
         let req = self
@@ -428,7 +432,7 @@ impl<const YEAR: u32> Settings<YEAR> {
     }
 
     fn get_prompt(&mut self, day: u32, api_key: &str) -> Result<(), AocError> {
-        let url = format!("https://adventofcode.com/{YEAR}/day/{day}");
+        let url = format!("https://adventofcode.com/{}/day/{day}", self.year);
         if self.runner_debug > 0 {
             eprintln!("Fetching {url}");
         }
