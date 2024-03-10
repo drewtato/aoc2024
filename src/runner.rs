@@ -1,4 +1,4 @@
-use chrono::{Duration as ChDuration, FixedOffset, NaiveDate, Utc};
+use chrono::{FixedOffset, NaiveDate, TimeDelta, Utc};
 use clap::{ArgAction, Command, Parser, ValueEnum};
 use clap_complete::Shell;
 use notify::{RecommendedWatcher, Watcher};
@@ -359,7 +359,7 @@ impl Settings {
         if !input_main.exists() {
             let time_until_release = time_until_input_is_released(day, self.year);
             // If the puzzle is very far out
-            if time_until_release > ChDuration::hours(1) {
+            if time_until_release > TimeDelta::hours(1) {
                 // eprintln!(
                 // 	"Puzzle doesn't release for {:?}",
                 // 	time_until_release.to_std().unwrap()
@@ -371,8 +371,8 @@ impl Settings {
             }
 
             // If the puzzle hasn't been out for at least 5 seconds
-            if time_until_release > ChDuration::seconds(-5) {
-                let delay = time_until_release + ChDuration::seconds(5);
+            if time_until_release > TimeDelta::seconds(-5) {
+                let delay = time_until_release + TimeDelta::seconds(5);
                 eprint!("Puzzle releases in ");
                 eprint!(", waiting ");
 
@@ -872,7 +872,7 @@ fn parse_day(word: &str) -> Res<Vec<(u32, Vec<u32>)>> {
 /// US-East time. In such an event, change `ERIC_TIME_OFFSET` to `-4`.
 // Note: chrono is actually way more confusing than I thought. Idk if this is
 // the correct way to use it but it seems to work.
-fn time_until_input_is_released(day: u32, year: u32) -> ChDuration {
+fn time_until_input_is_released(day: u32, year: u32) -> TimeDelta {
     const ERIC_TIME_OFFSET: i32 = -5;
 
     let t = Utc::now().naive_utc();

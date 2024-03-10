@@ -1,4 +1,4 @@
-use chrono::Duration;
+use chrono::TimeDelta;
 use solver_interface::SolverError;
 use thiserror::Error;
 
@@ -11,7 +11,7 @@ pub enum AocError {
 	.duration.num_hours() - .duration.num_days() * 24,
 	.duration.num_minutes() - .duration.num_hours() * 60,
 	.duration.num_seconds() - .duration.num_minutes() * 60)]
-    HasNotReleasedYet { day: u32, duration: Duration },
+    HasNotReleasedYet { day: u32, duration: TimeDelta },
     #[error("no test input found with the name {path}")]
     NoTestInputFound { path: Box<str> },
     #[error("io: {source}")]
