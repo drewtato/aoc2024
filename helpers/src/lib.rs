@@ -16,22 +16,22 @@ pub use std::iter::{
 };
 pub use std::mem::{replace, swap, take};
 
+pub use bstr::{self, BStr, BString, ByteSlice, ByteVec};
 pub use itertools::Itertools;
-pub use regex::bytes::Regex;
-
-pub use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
-
 pub use num_integer::*;
-
 pub use primal::*;
-
 pub use rand::{self, Rng};
+pub use regex::bytes::Regex;
+pub use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 mod unwrap_display;
 pub use unwrap_display::*;
 
 mod rand_ext;
 pub use rand_ext::*;
+
+mod display_ext;
+pub use display_ext::*;
 
 /// Short version of [`Default::default`].
 pub fn def<D: Default>() -> D {

@@ -16,3 +16,4 @@ bytemuck.workspace = true
 num-integer.workspace = true
 primal.workspace = true
 rand_xorshift.workspace = true
+bstr.workspace = true
