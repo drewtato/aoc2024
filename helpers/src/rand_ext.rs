@@ -16,7 +16,7 @@ pub fn random<T>() -> T
 where
     Standard: Distribution<T>,
 {
-    global_rng().gen()
+    global_rng().r#gen()
 }
 
 pub fn rng() -> DefaultRng {

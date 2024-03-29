@@ -1,19 +1,21 @@
+cargo-features = ["edition2024"]
+
 [package]
+edition = "2024"
 name = "helpers"
 version = "0.1.0"
-edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-itertools.workspace = true
-rand.workspace = true
-regex.workspace = true
-rustc-hash.workspace = true
-rayon.workspace = true
 arrayvec.workspace = true
+bstr.workspace = true
 bytemuck.workspace = true
+itertools.workspace = true
 num-integer.workspace = true
 primal.workspace = true
+rand.workspace = true
 rand_xorshift.workspace = true
-bstr.workspace = true
+rayon.workspace = true
+regex.workspace = true
+rustc-hash.workspace = true
