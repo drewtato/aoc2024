@@ -6,7 +6,7 @@ use rand::{Rng, SeedableRng};
 use rand_xorshift::XorShiftRng;
 
 static GLOBAL_RNG: OnceLock<Mutex<DefaultRng>> = OnceLock::new();
-pub type DefaultRng = impl Rng;
+pub type DefaultRng = XorShiftRng;
 
 pub fn global_rng() -> impl DerefMut<Target = DefaultRng> {
     GLOBAL_RNG.get_or_init(|| Mutex::new(rng())).lock().unwrap()
