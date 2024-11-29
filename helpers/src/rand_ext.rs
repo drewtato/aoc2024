@@ -16,7 +16,7 @@ pub fn random<T>() -> T
 where
     Standard: Distribution<T>,
 {
-    global_rng().gen()
+    global_rng().r#gen()
 }
 
 pub fn rng() -> DefaultRng {
@@ -40,5 +40,15 @@ pub trait RngExt: Rng {
         Self: Sized,
     {
         self.sample_iter(Standard)
+    }
+
+    /// Alias for [`Rng::gen`], since `gen` will become a reserved word in the
+    /// 2024 edition.
+    fn generate<T>(&mut self) -> T
+    where
+        Standard: Distribution<T>,
+        Self: Sized,
+    {
+        self.r#gen()
     }
 }

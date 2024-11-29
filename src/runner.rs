@@ -8,13 +8,13 @@ use ureq::{Agent, AgentBuilder};
 
 use std::borrow::Cow;
 use std::fmt::Display;
-use std::fs::{create_dir_all, File};
-use std::io::{stderr, stdin, stdout, BufWriter, Write};
+use std::fs::{File, create_dir_all};
+use std::io::{BufWriter, Write, stderr, stdin, stdout};
 use std::iter::Sum;
 use std::ops::Div;
 use std::path::PathBuf;
-use std::sync::mpsc::{channel, sync_channel, Receiver, RecvTimeoutError, Sender, SyncSender};
 use std::sync::OnceLock;
+use std::sync::mpsc::{Receiver, RecvTimeoutError, Sender, SyncSender, channel, sync_channel};
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
 
@@ -22,10 +22,7 @@ use crate::{AocError, Res};
 
 /// User agent (see [Eric's post on the
 /// subreddit](https://www.reddit.com/r/adventofcode/comments/z9dhtd))
-const USER_AGENT: &str = "\
-	drewtato-aoc-runner-2024 \
-	at github.com/drewtato/aoc2024 \
-";
+const USER_AGENT: &str = "github.com/drewtato/aoc2024";
 
 /// How long to wait between polls in watch mode
 const WATCH_POLL_TIME: Duration = Duration::from_millis(20);
@@ -364,10 +361,7 @@ impl Settings {
                 // 	"Puzzle doesn't release for {:?}",
                 // 	time_until_release.to_std().unwrap()
                 // );
-                return Err(AocError::HasNotReleasedYet {
-                    day,
-                    duration: time_until_release,
-                });
+                return Err(AocError::has_not_released_yet(day, time_until_release));
             }
 
             // If the puzzle hasn't been out for at least 5 seconds

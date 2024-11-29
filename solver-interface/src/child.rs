@@ -14,9 +14,9 @@ use std::time::Duration;
 /// A type that can accept instructions from a parent process on which parts
 /// and inputs to run.
 pub trait ChildSolver {
-    fn part_one(input: &[u8], _debug: u8) -> impl Display;
-    fn part_two(input: &[u8], _debug: u8) -> impl Display;
-    fn run_any(_input: &[u8], _part: u32, _debug: u8) -> impl Display {
+    fn part_one(input: &[u8], _debug: u8) -> impl Display + 'static;
+    fn part_two(input: &[u8], _debug: u8) -> impl Display + 'static;
+    fn run_any(_input: &[u8], _part: u32, _debug: u8) -> impl Display + 'static {
         panic!("Not implemented");
         #[allow(unreachable_code)]
         ""

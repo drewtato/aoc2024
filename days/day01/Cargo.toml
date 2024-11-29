@@ -1,10 +1,10 @@
 [package]
+edition = "2024"
 name = "day01"
 version = "0.1.0"
-edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-solver-interface.workspace = true
 helpers.workspace = true
+solver-interface.workspace = true

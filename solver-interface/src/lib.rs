@@ -49,11 +49,9 @@ impl Run {
         S: ChildSolver + ?Sized,
     {
         use std::fmt::Write;
-
-        let Self { part } = self;
         buf.clear();
 
-        let d = match part {
+        let d = match self.part {
             1 => {
                 let (d, ans) = time_fn(|| S::part_one(input, debug));
                 write!(buf, "{ans}").unwrap();
@@ -64,7 +62,7 @@ impl Run {
                 write!(buf, "{ans}").unwrap();
                 d
             }
-            _ => {
+            part => {
                 let (d, ans) = time_fn(|| S::run_any(input, part, debug));
                 write!(buf, "{ans}").unwrap();
                 d
@@ -88,7 +86,7 @@ pub enum ChildToParent<'a> {
     Err(Box<str>),
 }
 
-impl<'a> ChildToParent<'a> {
+impl ChildToParent<'_> {
     pub fn message_kind(&self) -> &'static str {
         match self {
             ChildToParent::Answer(_) => "Answer",
