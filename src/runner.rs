@@ -366,14 +366,19 @@ impl Settings {
 
             // If the puzzle hasn't been out for at least 5 seconds
             if time_until_release > TimeDelta::seconds(-5) {
+                use std::io::Write;
                 let delay = time_until_release + TimeDelta::seconds(5);
-                eprint!("Puzzle releases in ");
-                eprint!(", waiting ");
 
-                let stderr = stderr();
-                readable_time(&stderr, time_until_release.to_std().unwrap_or_default(), 0).unwrap();
-                readable_time(&stderr, delay.to_std().unwrap(), 0).unwrap();
-                eprintln!();
+                {
+                    let mut stderr = stderr();
+                    write!(stderr, "Puzzle releases in ").unwrap();
+                    readable_time(&stderr, time_until_release.to_std().unwrap_or_default(), 0)
+                        .unwrap();
+                    write!(stderr, ", waiting ").unwrap();
+                    readable_time(&stderr, delay.to_std().unwrap(), 0).unwrap();
+                    writeln!(stderr).unwrap();
+                    stderr.flush().unwrap();
+                }
 
                 std::thread::sleep(delay.to_std().unwrap());
             }
@@ -477,14 +482,19 @@ impl Settings {
         let mut solver_time = Duration::ZERO;
 
         for &(day, ref parts) in day_parts {
+            debug_println!(self.runner_debug, 2, "starting bencher for day {day}");
             let input = self.get_input(day)?;
             let mut bencher = self.day_to_bencher(day, input)?;
+            debug_println!(self.runner_debug, 2, "ParentSolver started");
 
             for &part in parts {
-                let (mut times, answer) = if self.bench_count != 0 {
+                debug_println!(self.runner_debug, 1, "Benching part {part}");
+                let (mut times, answer) = if self.bench_count == 0 {
+                    debug_println!(self.runner_debug, 2, "this is a timed bench");
                     let bench_time = Duration::from_millis(self.bench_time);
 
                     let BenchResult { times, answer } = bencher.bench(part, 1)?;
+                    debug_println!(self.runner_debug, 2, "got {} results", times.len());
 
                     if times[0] > bench_time {
                         (times, answer.into_owned())
@@ -515,9 +525,12 @@ impl Settings {
                         (times, first_answer)
                     }
                 } else {
+                    debug_println!(self.runner_debug, 2, "this is a counted bench");
                     let BenchResult { times, answer } = bencher.bench(part, self.bench_count)?;
                     (times, answer.into_owned())
                 };
+
+                debug_println!(self.runner_debug, 2, "got {} results", times.len());
 
                 let mut to_remove = (times.len().ilog2() as usize).saturating_sub(1) * 2;
                 if times.len() > 1 {

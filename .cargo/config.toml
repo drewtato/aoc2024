@@ -1,5 +1,5 @@
 [build]
-rustflags = ["-C", "target-cpu=native", "-C", "prefer-dynamic", "-Zthreads=12"]
+rustflags = ["-C", "target-cpu=native", "-C", "prefer-dynamic"]
 
 [profile.dev]
 opt-level = 1

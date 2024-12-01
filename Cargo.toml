@@ -21,6 +21,7 @@ ureq = "2.11.0"
 members = ["solver-interface", "helpers", "days/*"]
 
 [workspace.dependencies]
+atoi = "2.0.0"
 arrayvec = "0.7.6"
 bincode = "2.0.0-rc.3"
 bstr = "1.11.0"
