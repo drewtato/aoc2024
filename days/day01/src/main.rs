@@ -25,10 +25,7 @@ impl solver_interface::ChildSolver for Solver {
         l1.sort();
         l2.sort();
 
-        l1.iter()
-            .zip(&l2)
-            .map(|(&a, &b)| a.abs_diff(b))
-            .sum::<u32>()
+        l1.iter().zip(&l2).map(|(&a, &b)| a.abs_diff(b)).bsum()
     }
 
     fn part_two(input: &[u8], _debug: u8) -> impl Display + 'static {
@@ -45,8 +42,6 @@ impl solver_interface::ChildSolver for Solver {
             con.newline();
         }
 
-        l1.into_iter()
-            .map(|n| l2.get(n) * n as usize)
-            .sum::<usize>()
+        l1.into_iter().map(|n| l2.get(n) * n as usize).bsum()
     }
 }

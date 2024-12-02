@@ -122,10 +122,14 @@ impl<'a> Consume<'a> {
         &before[..(before.len() - self.len())]
     }
 
-    /// Consumes any non-digit characters. Returns the consumed slice.
+    /// Consumes any non-digit characters, except `-` and `+`. Returns the
+    /// consumed slice.
     pub fn non_digits(&mut self) -> &'a [u8] {
         let before = self.slice;
-        while self.byte_with(|byte| !byte.is_ascii_digit()).is_some() {}
+        while self
+            .byte_with(|byte| !byte.is_ascii_digit() && byte != b'-' && byte != b'+')
+            .is_some()
+        {}
         &before[..(before.len() - self.len())]
     }
 
@@ -168,6 +172,8 @@ impl<'a> Consume<'a> {
 
     /// Advances the slice `count` bytes. If the slice is shorter, advances to
     /// the end.
+    ///
+    /// Returns the consumed portion.
     pub fn consume(&mut self, count: usize) -> &'a [u8] {
         let count = core::cmp::min(count, self.len());
         let (start, end) = self.slice.split_at(count);
@@ -186,4 +192,34 @@ impl<'a> Consume<'a> {
     pub fn is_empty(&self) -> bool {
         self.slice.is_empty()
     }
+}
+
+/// Parses all numbers in a slice into a 2D `Vec`.
+pub fn parse_all_numbers<I: FromRadix10SignedChecked>(slice: &[u8]) -> Vec<Vec<I>> {
+    let mut con = Consume::new(slice);
+    let mut nums = Vec::new();
+    while !con.is_empty() {
+        let mut row = Vec::new();
+
+        while !con.newline() && !con.is_empty() {
+            con.non_digits();
+            let n = con
+                .signed_int()
+                .unwrap_or_else(|| panic!("int not found starting at {:?}", con.consume(30)));
+            row.push(n);
+        }
+
+        nums.push(row);
+    }
+    nums
+}
+
+#[test]
+fn parse_all_numbers_t() {
+    let slice = b"hello 3 world 5 7\n42897 278183 949 291371\n45yeyaeye589ashjlk283ad-90\n";
+    let v = parse_all_numbers::<i32>(slice);
+    let expected = vec![vec![3, 5, 7], vec![42897, 278183, 949, 291371], vec![
+        45, 589, 283, -90,
+    ]];
+    assert_eq!(v, expected);
 }

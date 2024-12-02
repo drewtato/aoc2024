@@ -40,8 +40,8 @@ pub use consume::*;
 mod counter;
 pub use counter::*;
 
-mod better_sum;
-// pub use better_sum::*;
+mod better_iter;
+pub use better_iter::*;
 
 /// Short version of [`Default::default`].
 pub fn def<D: Default>() -> D {

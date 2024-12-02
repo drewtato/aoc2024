@@ -9,18 +9,9 @@ struct Solver;
 
 impl solver_interface::ChildSolver for Solver {
     fn part_one(input: &[u8], _debug: u8) -> impl Display + 'static {
-        let mut reports = Vec::new();
-        let mut con = Consume::new(input);
-        while !con.is_empty() {
-            let mut row = Vec::new();
-            while !con.newline() {
-                con.whitespace();
-                let n: i32 = con.int().unwrap();
-                row.push(n);
-            }
-            reports.push(row);
-        }
+        let reports = parse_all_numbers::<i32>(input);
         let mut safe = 0;
+
         'l: for report in reports {
             let first = report[0];
             let mut last = report[1];
@@ -51,18 +42,9 @@ impl solver_interface::ChildSolver for Solver {
     }
 
     fn part_two(input: &[u8], _debug: u8) -> impl Display + 'static {
-        let mut reports = Vec::new();
-        let mut con = Consume::new(input);
-        while !con.is_empty() {
-            let mut row = Vec::new();
-            while !con.newline() {
-                con.whitespace();
-                let n: i32 = con.int().unwrap();
-                row.push(n);
-            }
-            reports.push(row);
-        }
+        let reports = parse_all_numbers::<i32>(input);
         let mut safe = 0;
+
         for report in reports {
             let mut this_safe = false;
             'l: for missing in 0..report.len() {
