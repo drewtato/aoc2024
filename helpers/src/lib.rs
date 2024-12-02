@@ -1,4 +1,4 @@
-#![feature(array_try_from_fn, iter_from_coroutine, type_alias_impl_trait)]
+#![feature(array_try_from_fn, iter_from_coroutine)]
 
 use std::io::stdin;
 use std::ops::{Add, Div, Mul};
@@ -33,6 +33,15 @@ pub use rand_ext::*;
 
 mod display_ext;
 pub use display_ext::*;
+
+mod consume;
+pub use consume::*;
+
+mod counter;
+pub use counter::*;
+
+mod better_sum;
+// pub use better_sum::*;
 
 /// Short version of [`Default::default`].
 pub fn def<D: Default>() -> D {

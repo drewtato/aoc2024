@@ -12,6 +12,7 @@ clap_complete = "4.5.38"
 helpers.workspace = true
 html-escape = "0.2.13"
 notify = "7.0.0"
+num-integer.workspace = true
 regex.workspace = true
 solver-interface.workspace = true
 thiserror.workspace = true

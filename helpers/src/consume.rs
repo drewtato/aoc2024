@@ -1,0 +1,189 @@
+use std::ops::RangeBounds;
+
+use atoi::{FromRadix10Checked, FromRadix10SignedChecked};
+use bstr::BStr;
+
+/// A `[u8]` parser that works by consuming various items from the front of the
+/// stream.
+#[derive(Debug, Clone)]
+pub struct Consume<'a> {
+    slice: &'a BStr,
+}
+
+impl<'a> Consume<'a> {
+    /// Creates a new `Consumer`.
+    #[must_use]
+    pub fn new(slice: &'a [u8]) -> Self {
+        Self {
+            slice: BStr::new(slice),
+        }
+    }
+
+    /// If the first byte is `byte`, advances by one and returns `true`.
+    /// Otherwise, returns `false`.
+    pub fn byte(&mut self, byte: u8) -> bool {
+        self.byte_with(|b| b == byte).is_some()
+    }
+
+    /// Consumes the first byte if it is within `range` and returns it.
+    /// Otherwise, returns `None`.
+    pub fn range(&mut self, range: impl RangeBounds<u8>) -> Option<u8> {
+        self.byte_with(|b| range.contains(&b))
+    }
+
+    /// If the slice starts with `prefix`, advance the slice and returns `true`.
+    /// Otherwise, returns `false`.
+    pub fn prefix(&mut self, prefix: &[u8]) -> bool {
+        self.with(|slice| {
+            if slice.starts_with(prefix) {
+                prefix.len()
+            } else {
+                0
+            }
+        })
+        .len()
+            == prefix.len()
+    }
+
+    /// Consumes digits from the front of the string to read an unsigned
+    /// integer.
+    ///
+    /// If the integer overflows, this panics. If the slice did not start with a
+    /// digit or sign, this returns `None`.
+    pub fn int<I: FromRadix10Checked>(&mut self) -> Option<I> {
+        let (Some(n), count) = I::from_radix_10_checked(self.slice) else {
+            if self.len() > 30 {
+                panic!(
+                    "integer type not large enough to parse a number from {:?} (truncated)",
+                    BStr::new(&self.slice[..20])
+                );
+            } else {
+                panic!(
+                    "integer type not large enough to parse a number from {:?}",
+                    self.slice
+                );
+            }
+        };
+
+        if count != 0 {
+            self.consume(count);
+            Some(n)
+        } else {
+            None
+        }
+    }
+
+    /// Consumes digits from the front of the string to read a signed integer.
+    ///
+    /// If the integer overflows, this panics. If the slice did not start with a
+    /// digit or sign, this returns `None`.
+    pub fn signed_int<I: FromRadix10SignedChecked>(&mut self) -> Option<I> {
+        let (Some(n), count) = I::from_radix_10_signed_checked(self.slice) else {
+            if self.len() > 30 {
+                panic!(
+                    "integer type not large enough to parse a number from {:?} (truncated)",
+                    BStr::new(&self.slice[..20])
+                );
+            } else {
+                panic!(
+                    "integer type not large enough to parse a number from {:?}",
+                    self.slice
+                );
+            }
+        };
+
+        if count != 0 {
+            self.consume(count);
+            Some(n)
+        } else {
+            None
+        }
+    }
+
+    /// Consumes whitespace from the slice, returning how many bytes were
+    /// consumed.
+    pub fn whitespace(&mut self) -> usize {
+        let before = self.len();
+        while self.byte_with(|b| b.is_ascii_whitespace()).is_some() {}
+        before - self.len()
+    }
+
+    /// Consumes a newline, returning `true` if a newline was consumed.
+    pub fn newline(&mut self) -> bool {
+        self.byte(b'\n')
+    }
+
+    /// Consumes everything up to and including the next newline. Returns the
+    /// consumed slice.
+    pub fn next_newline(&mut self) -> &'a [u8] {
+        let before = self.slice;
+        while self.byte_with(|byte| byte != b'\n').is_some() {}
+        self.consume(1);
+        &before[..(before.len() - self.len())]
+    }
+
+    /// Consumes any non-digit characters. Returns the consumed slice.
+    pub fn non_digits(&mut self) -> &'a [u8] {
+        let before = self.slice;
+        while self.byte_with(|byte| !byte.is_ascii_digit()).is_some() {}
+        &before[..(before.len() - self.len())]
+    }
+
+    /// Runs a closure on the entire slice.
+    ///
+    /// The slice will be advanced by the count returned by the closure, and the
+    /// consumed slice will be returned.
+    pub fn with(&mut self, f: impl FnOnce(&'a [u8]) -> usize) -> &'a [u8] {
+        let before = self.slice;
+        let count = f(self.slice);
+        self.consume(count);
+        &before[..(before.len() - self.len())]
+    }
+
+    /// Runs a closure on the first byte.
+    ///
+    /// If the closure returns `true`, the slice is advanced by one byte and
+    /// the consumed byte is returned. Otherwise, returns `None`.
+    fn byte_with(&mut self, f: impl FnOnce(u8) -> bool) -> Option<u8> {
+        let &first = self.slice.first()?;
+        if f(first) {
+            self.consume(1);
+            Some(first)
+        } else {
+            None
+        }
+    }
+
+    /// Gets the underlying slice.
+    #[must_use]
+    pub fn slice(&self) -> &'a [u8] {
+        self.slice
+    }
+
+    /// Gets the underlying slice as a [`BStr`].
+    #[must_use]
+    pub fn bstr(&self) -> &'a BStr {
+        self.slice
+    }
+
+    /// Advances the slice `count` bytes. If the slice is shorter, advances to
+    /// the end.
+    pub fn consume(&mut self, count: usize) -> &'a [u8] {
+        let count = core::cmp::min(count, self.len());
+        let (start, end) = self.slice.split_at(count);
+        self.slice = BStr::new(end);
+        start
+    }
+
+    /// Gets the length of the slice.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.slice.len()
+    }
+
+    /// Returns `true` if the slice has a length of zero.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.slice.is_empty()
+    }
+}

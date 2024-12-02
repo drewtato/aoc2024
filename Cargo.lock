@@ -90,6 +90,7 @@ dependencies = [
  "helpers",
  "html-escape",
  "notify",
+ "num-integer",
  "regex",
  "solver-interface",
  "thiserror",
