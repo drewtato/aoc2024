@@ -1,4 +1,4 @@
-#![feature(array_try_from_fn, iter_from_coroutine)]
+#![feature(array_try_from_fn, iter_from_coroutine, slice_take)]
 
 use std::io::stdin;
 use std::ops::{Add, Div, Mul};

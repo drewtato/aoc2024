@@ -1,11 +1,9 @@
 [build]
 rustflags = ["-C", "target-cpu=native", "-C", "prefer-dynamic"]
 
-[profile.dev]
-opt-level = 1
-
 [profile.day-dev]
 inherits = "dev"
+opt-level = 1
 
 [profile.day-release]
 inherits = "release"
