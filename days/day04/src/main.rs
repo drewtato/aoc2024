@@ -44,7 +44,8 @@ impl solver_interface::ChildSolver for Solver {
                             .then(|| [map[y + 1][x - 1], map[y + 2][x - 2], map[y + 3][x - 3]]),
                     ]
                     .into_iter()
-                    .filter(|&b| b == Some(*b"MAS"))
+                    .flatten()
+                    .filter(|&b| b == *b"MAS")
                     .count();
                     count += xmases;
                 }
@@ -70,9 +71,9 @@ impl solver_interface::ChildSolver for Solver {
         let width = map[0].len();
         let height = map.len();
         let mut count: usize = 0;
-        for (y, row) in map.iter().enumerate() {
-            for (x, &letter) in row.iter().enumerate() {
-                if letter == b'A' && (1..width - 1).contains(&x) && (1..height - 1).contains(&y) {
+        for (y, row) in map.iter().enumerate().skip(1).take(height - 2) {
+            for (x, &letter) in row.iter().enumerate().skip(1).take(width - 2) {
+                if letter == b'A' {
                     let corners = [
                         map[y - 1][x - 1],
                         map[y + 1][x + 1],

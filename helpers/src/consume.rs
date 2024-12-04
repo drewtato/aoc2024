@@ -182,8 +182,10 @@ impl<'a> Consume<'a> {
     }
 
     pub fn consume_byte(&mut self) -> Option<u8> {
-        let b = self.consume(1);
-        b.first().copied()
+        let mut slice = self.slice();
+        let byte = slice.take_first().copied();
+        self.slice = BStr::new(slice);
+        byte
     }
 
     /// Gets the length of the slice.
