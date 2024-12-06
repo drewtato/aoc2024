@@ -35,7 +35,7 @@ impl solver_interface::ChildSolver for Solver {
             .unwrap();
 
         let mut dir = [-1, 0];
-        let mut visited = HashSet::from_iter([(pos, dir)]);
+        let mut visited = HashSet::from_iter([pos]);
         loop {
             let next_pos = [pos[0] + dir[0], pos[1] + dir[1]];
             let Some(c) = map
@@ -55,29 +55,11 @@ impl solver_interface::ChildSolver for Solver {
                 };
             } else {
                 pos = next_pos;
-                if !visited.insert((pos, dir)) {
-                    panic!("the guard looped already");
-                }
+                visited.insert(pos);
             }
         }
 
-        let visited_directionless = visited
-            .into_iter()
-            .map(|(pos, _)| pos)
-            .collect::<HashSet<_>>();
-
-        // for (y, row) in map.iter().enumerate() {
-        //     for (x, &c) in row.iter().enumerate() {
-        //         if visited_directionless.contains(&[y as i32, x as i32]) {
-        //             eprint!("X");
-        //         } else {
-        //             eprint!("{}", c as char);
-        //         }
-        //     }
-        //     eprintln!();
-        // }
-
-        visited_directionless.len()
+        visited.len()
     }
 
     fn part_two(input: &[u8], _debug: u8) -> impl Display + 'static {
@@ -106,47 +88,74 @@ impl solver_interface::ChildSolver for Solver {
             })
             .unwrap();
 
+        // Find all possible points
+        let mut pos = start_pos;
+        let mut dir = [-1, 0];
+        let mut visited = HashSet::from_iter([pos]);
+        loop {
+            let next_pos = [pos[0] + dir[0], pos[1] + dir[1]];
+            let Some(c) = map
+                .get(next_pos[0] as usize)
+                .and_then(|row| row.get(next_pos[1] as usize))
+                .copied()
+            else {
+                break;
+            };
+            if c != b'.' {
+                dir = match dir {
+                    [-1, 0] => [0, 1],
+                    [0, 1] => [1, 0],
+                    [1, 0] => [0, -1],
+                    [0, -1] => [-1, 0],
+                    _ => unreachable!(),
+                };
+            } else {
+                pos = next_pos;
+                visited.insert(pos);
+            }
+        }
+
+        // Replace all possible points with obstruction
+        visited.remove(&start_pos);
+        let original_visited = visited;
         let mut visited = HashSet::default();
         let mut count = 0;
-        for row in 0..map.len() {
-            for col in 0..map[0].len() {
-                if map[row][col] != b'.' {
-                    continue;
-                }
-                map[row][col] = b'#';
-                let mut dir = [-1, 0];
-                let mut pos = start_pos;
-                visited.insert((pos, dir));
+        for [row, col] in original_visited {
+            let row = row as usize;
+            let col = col as usize;
+            map[row][col] = b'#';
+            let mut dir = [-1, 0];
+            let mut pos = start_pos;
+            visited.insert((pos, dir));
 
-                loop {
-                    let next_pos = [pos[0] + dir[0], pos[1] + dir[1]];
-                    let Some(c) = map
-                        .get(next_pos[0] as usize)
-                        .and_then(|row| row.get(next_pos[1] as usize))
-                        .copied()
-                    else {
-                        break;
+            loop {
+                let next_pos = [pos[0] + dir[0], pos[1] + dir[1]];
+                let Some(c) = map
+                    .get(next_pos[0] as usize)
+                    .and_then(|row| row.get(next_pos[1] as usize))
+                    .copied()
+                else {
+                    break;
+                };
+                if c != b'.' {
+                    dir = match dir {
+                        [-1, 0] => [0, 1],
+                        [0, 1] => [1, 0],
+                        [1, 0] => [0, -1],
+                        [0, -1] => [-1, 0],
+                        _ => unreachable!(),
                     };
-                    if c != b'.' {
-                        dir = match dir {
-                            [-1, 0] => [0, 1],
-                            [0, 1] => [1, 0],
-                            [1, 0] => [0, -1],
-                            [0, -1] => [-1, 0],
-                            _ => unreachable!(),
-                        };
-                    } else {
-                        pos = next_pos;
-                        if !visited.insert((pos, dir)) {
-                            count += 1;
-                            break;
-                        }
+                } else {
+                    pos = next_pos;
+                    if !visited.insert((pos, dir)) {
+                        count += 1;
+                        break;
                     }
                 }
-
-                map[row][col] = b'.';
-                visited.clear();
             }
+
+            map[row][col] = b'.';
+            visited.clear();
         }
 
         count
