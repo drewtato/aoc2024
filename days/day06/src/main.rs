@@ -8,37 +8,33 @@ fn main() {
     Solver::run().unwrap_display();
 }
 
-struct Solver;
-
 impl solver_interface::ChildSolver for Solver {
     fn part_one(input: &[u8], _debug: u8) -> impl Display + 'static {
-        let map = Map::new(input);
-        map.part_one()
+        Self::new(input).part_one()
     }
 
     fn part_two(input: &[u8], _debug: u8) -> impl Display + 'static {
-        let map = Map::new(input);
-        map.part_two()
+        Self::new(input).part_two()
     }
 }
 
 type Int = i16;
 
 #[derive(Debug, Clone)]
-struct Map {
+struct Solver {
     map: Vec<Spot>,
     width: Int,
     height: Int,
     start: [Int; 2],
 }
 
-impl Map {
+impl Solver {
     fn new(input: &[u8]) -> Self {
         let mut start = None;
         let mut map = Vec::with_capacity(input.len());
         let mut y = 0;
         let mut iter = input.iter();
-        let mut last_rocks_north = Vec::new();
+        let mut last_rocks_north = Vec::with_capacity(input.len().isqrt());
 
         // First row
         let mut last_rock_west = -1;
@@ -288,7 +284,7 @@ impl Map {
     }
 }
 
-impl Display for Map {
+impl Display for Solver {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use std::fmt::Write;
         let mut line = [const { String::new() }; 3];
