@@ -233,11 +233,7 @@ impl Map {
             }
 
             // Because dirs have a period of 4, and it rotates every step, these will only
-<<<<<<< HEAD
             // be equal when 2 moves 2n and 1 moves 6n.
-=======
-            // be equal when 2 moves 2n and 1 moves 4n.
->>>>>>> c86be4a9774a94913d03e8688d6be016f38cc815
             if (pos1, dir1) == (pos2, dir2) {
                 break true;
             }
