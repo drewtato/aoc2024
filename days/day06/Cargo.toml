@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 helpers.workspace = true
 solver-interface.workspace = true
+rayon.workspace = true
