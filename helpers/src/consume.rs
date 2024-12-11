@@ -100,12 +100,14 @@ impl<'a> Consume<'a> {
         }
     }
 
-    /// Consumes whitespace from the slice, returning how many bytes were
-    /// consumed.
-    pub fn whitespace(&mut self) -> usize {
-        let before = self.len();
-        while self.byte_with(|b| b.is_ascii_whitespace()).is_some() {}
-        before - self.len()
+    /// Consumes whitespace from the slice, returning the consumed slice.
+    pub fn whitespace(&mut self) -> &'a [u8] {
+        self.with(|slice| {
+            slice
+                .iter()
+                .take_while(|&b| b.is_ascii_whitespace())
+                .count()
+        })
     }
 
     /// Consumes a newline, returning `true` if a newline was consumed.
