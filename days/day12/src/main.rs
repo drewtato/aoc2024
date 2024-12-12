@@ -1,3 +1,5 @@
+#![feature(array_windows)]
+
 use std::cell::Cell;
 
 use helpers::*;
@@ -74,8 +76,8 @@ impl Solver {
         let mut stack = Vec::new();
 
         // Negatives are above or to the left
-        let mut verticals = BTreeSet::new();
-        let mut horizontals = BTreeSet::new();
+        let mut verticals = Vec::new();
+        let mut horizontals = Vec::new();
         for (row, y) in map.chunks(self.width as usize).zip(0..) {
             for (plot, x) in row.iter().zip(0..) {
                 let current = plot.get();
@@ -104,22 +106,22 @@ impl Solver {
                             }
                         }
                         if is_horizontal {
-                            horizontals.insert(addable);
+                            horizontals.push(addable);
                         } else {
-                            verticals.insert(addable);
+                            verticals.push(addable);
                         }
                     }
                 }
                 let mut sides = 2;
                 // eprintln!("{verticals:?}");
                 // eprintln!("{horizontals:?}");
+                horizontals.sort_unstable();
+                verticals.sort_unstable();
                 for set in [&verticals, &horizontals] {
-                    let mut last = *set.first().unwrap();
-                    for &next in set.iter().skip(1) {
+                    for &[last, next] in set.array_windows() {
                         if last[0] != next[0] || last[1] != next[1] - 1 {
                             sides += 1;
                         }
-                        last = next;
                     }
                 }
                 let this_price = area * sides;
