@@ -349,7 +349,7 @@ enum Direction {
     South,
     West,
 }
-use Direction::*;
+use self::Direction::*;
 
 impl Direction {
     fn to_coord(self) -> [Int; 2] {

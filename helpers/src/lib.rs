@@ -43,6 +43,9 @@ pub use counter::*;
 mod better_iter;
 pub use better_iter::*;
 
+mod direction;
+pub use direction::*;
+
 /// Short version of [`Default::default`].
 pub fn def<D: Default>() -> D {
     D::default()

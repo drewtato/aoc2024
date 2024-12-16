@@ -1,5 +1,5 @@
-use std::io::Write;
-use std::ops::{Add, AddAssign};
+use std::fs::File;
+use std::io::{BufWriter, Write};
 
 use helpers::*;
 
@@ -29,15 +29,33 @@ struct Solver2 {
 }
 
 impl solver_interface::ChildSolver for Solver {
-    fn part_one(input: &[u8], _debug: u8) -> impl Display + 'static {
+    fn part_one(input: &[u8], debug: u8) -> impl Display + 'static {
         let mut solver = Self::new(input);
-        solver.simulate_all();
+        if debug == 1 {
+            for _ in 0..1000 {
+                solver.simulate_all();
+                solver.print(&mut BufWriter::new(
+                    File::create("outputs/day15/out01.txt").unwrap(),
+                ));
+            }
+        } else {
+            solver.simulate_all();
+        }
         solver.sum_of_gps()
     }
 
-    fn part_two(input: &[u8], _debug: u8) -> impl Display + 'static {
+    fn part_two(input: &[u8], debug: u8) -> impl Display + 'static {
         let mut solver = Solver2::new(input);
-        solver.simulate_all();
+        if debug == 1 {
+            for _ in 0..1000 {
+                solver.simulate_all();
+                solver.print(&mut BufWriter::new(
+                    File::create("outputs/day15/out02.txt").unwrap(),
+                ));
+            }
+        } else {
+            solver.simulate_all();
+        }
         solver.sum_of_gps()
     }
 }
@@ -67,12 +85,7 @@ impl Solver2 {
             height += 1;
         }
         let width = map.len() as i32 / height;
-        let movements = con
-            .slice()
-            .iter()
-            .copied()
-            .filter_map(Direction::from_u8)
-            .collect();
+        let movements = con.slice().iter().copied().filter_map(from_u8).collect();
         Self {
             map,
             width,
@@ -223,12 +236,7 @@ impl Solver {
             height += 1;
         }
         let width = map.len() as i32 / height;
-        let movements = con
-            .slice()
-            .iter()
-            .copied()
-            .filter_map(Direction::from_u8)
-            .collect();
+        let movements = con.slice().iter().copied().filter_map(from_u8).collect();
         Self {
             map,
             width,
@@ -323,53 +331,15 @@ fn gps(y: i32, x: i32) -> i32 {
     y * 100 + x
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Direction {
-    North,
-    East,
-    South,
-    West,
-}
 use Direction::*;
 
-impl Direction {
-    fn from_u8(b: u8) -> Option<Self> {
-        let s = match b {
-            b'^' => North,
-            b'>' => East,
-            b'v' => South,
-            b'<' => West,
-            _ => return None,
-        };
-        Some(s)
-    }
-
-    fn to_coord(self) -> [i32; 2] {
-        match self {
-            North => [-1, 0],
-            East => [0, 1],
-            South => [1, 0],
-            West => [0, -1],
-        }
-    }
-
-    fn is_vertical(self) -> bool {
-        matches!(self, North | South)
-    }
-}
-
-impl AddAssign<Direction> for [i32; 2] {
-    fn add_assign(&mut self, rhs: Direction) {
-        *self = *self + rhs
-    }
-}
-
-impl Add<Direction> for [i32; 2] {
-    type Output = Self;
-
-    fn add(self, rhs: Direction) -> Self::Output {
-        let [y, x] = self;
-        let [dy, dx] = rhs.to_coord();
-        [y + dy, x + dx]
-    }
+fn from_u8(b: u8) -> Option<Direction> {
+    let s = match b {
+        b'^' => North,
+        b'>' => East,
+        b'v' => South,
+        b'<' => West,
+        _ => return None,
+    };
+    Some(s)
 }
