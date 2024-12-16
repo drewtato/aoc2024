@@ -1,11 +1,11 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Direction {
     North,
     East,
     South,
     West,
 }
-use std::ops::{Add, AddAssign, Index, IndexMut};
+use std::ops::{Add, AddAssign, Index, IndexMut, Sub, SubAssign};
 
 use Direction::*;
 
@@ -30,6 +30,16 @@ impl Direction {
         }
     }
 
+    pub fn from_index(index: usize) -> Self {
+        match index {
+            0 => North,
+            1 => East,
+            2 => South,
+            3 => West,
+            _ => panic!("directions are only 0 to 3"),
+        }
+    }
+
     pub fn turn_right(&mut self) {
         *self = match self {
             North => East,
@@ -46,6 +56,16 @@ impl Direction {
             South => East,
             West => South,
         }
+    }
+
+    pub fn right(mut self) -> Self {
+        self.turn_right();
+        self
+    }
+
+    pub fn left(mut self) -> Self {
+        self.turn_left();
+        self
     }
 
     pub fn is_vertical(self) -> bool {
@@ -89,5 +109,21 @@ impl Add<Direction> for [Int; 2] {
 impl AddAssign<Direction> for [Int; 2] {
     fn add_assign(&mut self, rhs: Direction) {
         *self = *self + rhs
+    }
+}
+
+impl Sub<Direction> for [Int; 2] {
+    type Output = Self;
+
+    fn sub(self, rhs: Direction) -> Self::Output {
+        let [y, x] = self;
+        let [dy, dx] = rhs.to_coord();
+        [y - dy, x - dx]
+    }
+}
+
+impl SubAssign<Direction> for [Int; 2] {
+    fn sub_assign(&mut self, rhs: Direction) {
+        *self = *self - rhs
     }
 }
