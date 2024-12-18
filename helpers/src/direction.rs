@@ -80,6 +80,10 @@ impl Direction {
             West => pos[1] - coord,
         }
     }
+
+    pub fn all() -> [Self; 4] {
+        [North, East, South, West]
+    }
 }
 
 impl<T> Index<Direction> for [T; 4] {

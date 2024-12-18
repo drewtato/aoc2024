@@ -49,6 +49,15 @@ impl solver_interface::ChildSolver for Solver {
             solver.reset(a);
             assert!(solver.eq(target.iter().copied()));
         }
+        if debug == 2 {
+            let mut ma = a;
+            while ma > 0 {
+                let rem = ma % 8;
+                eprint!("{rem},");
+                ma >>= 3;
+            }
+            eprintln!();
+        }
         a
     }
 }

@@ -96,13 +96,6 @@ impl Solver2 {
         }
     }
 
-    fn get(&self, [y, x]: [i32; 2]) -> Option<u8> {
-        if !(0..self.width).contains(&x) || !(0..self.height).contains(&y) {
-            return None;
-        }
-        Some(self.map[(y * self.width + x) as usize])
-    }
-
     fn simulate(&mut self, steps: usize) {
         // let mut file = &mut
         // BufWriter::new(File::create("outputs/day15/out.txt").unwrap());
@@ -186,6 +179,13 @@ impl Solver2 {
             }
         }
         sum
+    }
+
+    fn get(&self, [y, x]: [i32; 2]) -> Option<u8> {
+        if !(0..self.width).contains(&x) || !(0..self.height).contains(&y) {
+            return None;
+        }
+        Some(self.map[(y * self.width + x) as usize])
     }
 
     fn get_mut(&mut self, [y, x]: [i32; 2]) -> Option<&mut u8> {
