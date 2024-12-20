@@ -68,9 +68,10 @@ impl Solver {
     }
 
     fn two(&self) -> usize {
+        let mut memo = PatternTree::create_memo();
         self.designs
             .iter()
-            .map(|design| self.patterns.count_possible(design))
+            .map(|design| self.patterns.count_possible_memo(design, &mut memo))
             .sum()
     }
 }
@@ -165,10 +166,10 @@ impl PatternTree {
         }
     }
 
-    fn count_possible(&self, design: &[Stripe]) -> usize {
+    fn create_memo<'a>() -> HashMap<&'a [Stripe], usize> {
         let mut memo = HashMap::default();
-        memo.insert(&design[0..0], 1);
-        self.count_possible_memo(design, &mut memo)
+        memo.insert(&[] as &[Stripe], 1);
+        memo
     }
 
     fn count_possible_memo<'a>(
