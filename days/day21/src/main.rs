@@ -46,8 +46,7 @@ impl Solver {
     }
 
     fn one(&self) -> u64 {
-        let depth = 3;
-        let mut depth: Vec<_> = (0..depth - 1).map(|_| Layer::default()).collect();
+        let mut depth = Layer::new_layers(3);
         let ans = self
             .codes
             .iter()
@@ -60,8 +59,7 @@ impl Solver {
     }
 
     fn two(&self) -> u64 {
-        let depth = 26;
-        let mut depth: Vec<_> = (0..depth - 1).map(|_| Layer::default()).collect();
+        let mut depth = Layer::new_layers(26);
         self.codes
             .iter()
             .map(|&(n, ref buttons)| {
@@ -73,11 +71,10 @@ impl Solver {
 
     fn shortest(buttons: &[Numeric], depth: &mut [Layer]) -> u64 {
         let mut numeric = NumericA;
-        let mut sum = 0;
-        for &b in buttons {
-            sum += numeric.move_to_and_press(b, depth);
-        }
-        sum
+        buttons
+            .iter()
+            .map(|&b| numeric.move_to_and_press(b, depth))
+            .sum()
     }
 }
 
@@ -346,6 +343,10 @@ struct Layer {
 }
 
 impl Layer {
+    fn new_layers(depth: usize) -> Vec<Self> {
+        (0..depth - 1).map(|_| Self::default()).collect()
+    }
+
     fn get_or_insert_with(
         &mut self,
         a: Directional,
