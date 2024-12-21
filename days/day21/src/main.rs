@@ -142,7 +142,10 @@ impl Numeric {
     }
 
     fn move_to_and_press(&mut self, b: Self, depth: &mut [Layer]) -> u64 {
-        let [ay, ax] = self.to_pos();
+        let a = *self;
+        *self = b;
+
+        let [ay, ax] = a.to_pos();
         let [by, bx] = b.to_pos();
         let dy = by - ay;
         let dx = bx - ax;
@@ -193,7 +196,6 @@ impl Numeric {
             length + directional.move_to_and_press(DirectionalA, depth)
         };
 
-        *self = b;
         vert_horiz.min(horiz_vert)
     }
 }
@@ -252,74 +254,70 @@ impl Directional {
 
     fn move_to_and_press(&mut self, b: impl Into<Directional>, depth: &mut [Layer]) -> u64 {
         let b = b.into();
+        let a = *self;
+        *self = b;
 
         let Some((layer, depth)) = depth.split_first_mut() else {
             return 1; // the human pressing the button
         };
-        if let Some(ans) = layer.get(*self, b) {
-            *self = b;
-            return ans;
-        }
 
-        let [ay, ax] = self.to_pos();
-        let [by, bx] = b.to_pos();
-        let dy = by - ay;
-        let dx = bx - ax;
+        layer.get_or_insert_with(a, b, || {
+            let [ay, ax] = a.to_pos();
+            let [by, bx] = b.to_pos();
+            let dy = by - ay;
+            let dx = bx - ax;
 
-        let vert_horiz = 'b: {
-            if ax == 0 && by == 0 {
-                break 'b u64::MAX;
-            }
+            let vert_horiz = 'b: {
+                if ax == 0 && by == 0 {
+                    break 'b u64::MAX;
+                }
 
-            let mut length = 0;
-            let mut directional = DirectionalA;
+                let mut length = 0;
+                let mut directional = DirectionalA;
 
-            for _ in 0..dy {
-                length += directional.move_to_and_press(South, depth);
-            }
-            for _ in dy..0 {
-                length += directional.move_to_and_press(North, depth);
-            }
+                for _ in 0..dy {
+                    length += directional.move_to_and_press(South, depth);
+                }
+                for _ in dy..0 {
+                    length += directional.move_to_and_press(North, depth);
+                }
 
-            for _ in 0..dx {
-                length += directional.move_to_and_press(East, depth);
-            }
-            for _ in dx..0 {
-                length += directional.move_to_and_press(West, depth);
-            }
-            length + directional.move_to_and_press(DirectionalA, depth)
-        };
+                for _ in 0..dx {
+                    length += directional.move_to_and_press(East, depth);
+                }
+                for _ in dx..0 {
+                    length += directional.move_to_and_press(West, depth);
+                }
+                length + directional.move_to_and_press(DirectionalA, depth)
+            };
 
-        let horiz_vert = 'b: {
-            if ay == 0 && bx == 0 {
-                break 'b u64::MAX;
-            }
+            let horiz_vert = 'b: {
+                if ay == 0 && bx == 0 {
+                    break 'b u64::MAX;
+                }
 
-            let mut length = 0;
-            let mut directional = DirectionalA;
+                let mut length = 0;
+                let mut directional = DirectionalA;
 
-            for _ in 0..dx {
-                length += directional.move_to_and_press(East, depth);
-            }
-            for _ in dx..0 {
-                length += directional.move_to_and_press(West, depth);
-            }
+                for _ in 0..dx {
+                    length += directional.move_to_and_press(East, depth);
+                }
+                for _ in dx..0 {
+                    length += directional.move_to_and_press(West, depth);
+                }
 
-            for _ in 0..dy {
-                length += directional.move_to_and_press(South, depth);
-            }
-            for _ in dy..0 {
-                length += directional.move_to_and_press(North, depth);
-            }
+                for _ in 0..dy {
+                    length += directional.move_to_and_press(South, depth);
+                }
+                for _ in dy..0 {
+                    length += directional.move_to_and_press(North, depth);
+                }
 
-            length + directional.move_to_and_press(DirectionalA, depth)
-        };
+                length + directional.move_to_and_press(DirectionalA, depth)
+            };
 
-        let ans = vert_horiz.min(horiz_vert);
-
-        layer.insert(*self, b, ans);
-        *self = b;
-        ans
+            vert_horiz.min(horiz_vert)
+        })
     }
 }
 
@@ -348,11 +346,17 @@ struct Layer {
 }
 
 impl Layer {
-    fn get(&self, a: Directional, b: Directional) -> Option<u64> {
-        self.memo[a.to_index()][b.to_index()].map(|n| n.get())
-    }
-
-    fn insert(&mut self, a: Directional, b: Directional, ans: u64) {
-        self.memo[a.to_index()][b.to_index()] = Some(ans.try_into().unwrap());
+    fn get_or_insert_with(
+        &mut self,
+        a: Directional,
+        b: Directional,
+        f: impl FnOnce() -> u64,
+    ) -> u64 {
+        self.memo[a.to_index()][b.to_index()]
+            .get_or_insert_with(|| {
+                let ans = f();
+                ans.try_into().unwrap()
+            })
+            .get()
     }
 }
