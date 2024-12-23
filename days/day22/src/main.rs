@@ -1,4 +1,7 @@
+use std::sync::atomic::AtomicU16;
+
 use helpers::*;
+use rayon::iter::{ParallelBridge, ParallelIterator};
 
 fn main() {
     use solver_interface::ChildSolverExt;
@@ -9,11 +12,41 @@ struct Solver;
 
 impl solver_interface::ChildSolver for Solver {
     fn part_one(input: &[u8], _debug: u8) -> impl Display + 'static {
-        Self::for_each_number(input, def, one, identity)
+        rayon::ThreadPoolBuilder::new()
+            .stack_size(32_000_000)
+            .build_global()
+            .unwrap();
+        Self::for_each_number(input, def, one, |a, b| a + b, identity)
     }
 
     fn part_two(input: &[u8], _debug: u8) -> impl Display + 'static {
-        Self::for_each_number(input, def, two, two_answer)
+        let mut ans = AtomicU16::new(0);
+        rayon::scope(|scope| {
+            scope.spawn(|_| {
+                ans.store(
+                    Self::for_each_number(
+                        input,
+                        def,
+                        two,
+                        |mut a, b| {
+                            for (na, &nb) in a
+                                .iter_mut()
+                                .flatten()
+                                .flatten()
+                                .flatten()
+                                .zip(b.iter().flatten().flatten().flatten())
+                            {
+                                *na += nb;
+                            }
+                            a
+                        },
+                        two_answer,
+                    ),
+                    std::sync::atomic::Ordering::Relaxed,
+                )
+            });
+        });
+        *ans.get_mut()
     }
 }
 
@@ -64,21 +97,31 @@ fn two_answer(change_totals: [[[[u16; 19]; 19]; 19]; 19]) -> u16 {
 }
 
 impl Solver {
-    fn for_each_number<I, R>(
+    fn for_each_number<I: Send, R>(
         input: &[u8],
-        init: impl FnOnce() -> I,
-        mut f: impl FnMut(&mut I, i64),
+        init: impl Fn() -> I + Sync + Send,
+        f: impl Fn(&mut I, i64) + Sync + Send,
+        combine: impl Fn(I, I) -> I + Sync + Send,
         finish: impl FnOnce(I) -> R,
     ) -> R {
         let mut con = Consume::new(input);
-        let mut i = init();
-        while !con.is_empty() {
+        let iter = fn_iter(|| {
+            if con.is_empty() {
+                return None;
+            }
             let n = con.int().unwrap();
             con.newline();
-
-            f(&mut i, n)
-        }
-        finish(i)
+            Some(n)
+        });
+        let res = iter
+            .par_bridge()
+            .fold(init, |mut i, n| {
+                f(&mut i, n);
+                i
+            })
+            .reduce_with(combine)
+            .unwrap();
+        finish(res)
     }
 }
 
