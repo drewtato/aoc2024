@@ -46,6 +46,9 @@ pub use better_iter::*;
 mod direction;
 pub use direction::*;
 
+mod output;
+pub use output::*;
+
 /// Short version of [`Default::default`].
 pub fn def<D: Default>() -> D {
     D::default()
