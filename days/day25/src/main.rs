@@ -1,15 +1,3 @@
-#![feature(type_alias_impl_trait)]
-#![feature(array_windows)]
-#![feature(array_chunks)]
-#![feature(slice_take)]
-#![feature(iter_array_chunks)]
-#![feature(split_as_slice)]
-#![feature(coroutines)]
-#![feature(slice_split_once)]
-#![feature(impl_trait_in_assoc_type)]
-#![feature(array_try_map)]
-#![allow(unused)]
-
 use helpers::*;
 
 fn main() {
@@ -17,14 +5,63 @@ fn main() {
     Solver::run().unwrap_display();
 }
 
-struct Solver;
+struct Solver {
+    locks: Vec<[u8; 5]>,
+    keys: Vec<[u8; 5]>,
+}
 
 impl solver_interface::ChildSolver for Solver {
     fn part_one(input: &[u8], _debug: u8) -> impl Display + 'static {
-        "unimplemented"
+        let solver = Self::new(input);
+        let mut fit = 0;
+        for lock in &solver.locks {
+            // eprintln!("lock: {lock:?}");
+            for key in &solver.keys {
+                // eprintln!("key: {key:?}");
+                if lock.iter().zip(key).all(|(a, b)| a + b <= 5) {
+                    fit += 1;
+                }
+            }
+        }
+        fit
     }
 
-    fn part_two(input: &[u8], _debug: u8) -> impl Display + 'static {
-        "unimplemented"
+    fn part_two(_input: &[u8], _debug: u8) -> impl Display + 'static {
+        "sleigh!"
+    }
+}
+
+impl Solver {
+    fn new(input: &[u8]) -> Self {
+        let mut con = Consume::new(input);
+        let mut locks = Vec::new();
+        let mut keys = Vec::new();
+        while !con.is_empty() {
+            if con.next_newline() == b"#####\n" {
+                let mut bits = [0; 5];
+                for _ in 0..5 {
+                    for (bit, &b) in bits.iter_mut().zip(con.next_newline()) {
+                        if b == b'#' {
+                            *bit += 1;
+                        }
+                    }
+                }
+                con.next_newline();
+                locks.push(bits);
+            } else {
+                let mut bits = [0; 5];
+                for _ in 0..5 {
+                    for (bit, &b) in bits.iter_mut().zip(con.next_newline()) {
+                        if b == b'#' {
+                            *bit += 1;
+                        }
+                    }
+                }
+                con.next_newline();
+                keys.push(bits);
+            }
+            con.next_newline();
+        }
+        Self { locks, keys }
     }
 }

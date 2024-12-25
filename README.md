@@ -7,6 +7,7 @@ Once again, in Rust.
 ```txt
       --------Part 1--------   --------Part 2--------
 Day       Time   Rank  Score       Time   Rank  Score
+ 25   00:13:48   1323      0   00:13:51   1076      0
  24   15:58:08  17313      0   18:13:41   8625      0
  23   03:03:23   7218      0   13:52:00  14119      0
  22   00:36:28   3852      0   01:15:29   2751      0
@@ -32,3 +33,5 @@ Day       Time   Rank  Score       Time   Rank  Score
   2   00:21:05   7218      0   00:28:34   4398      0
   1   00:05:26   2217      0   00:09:00   2378      0
 ```
+
+The year is done, Merry Christmas 🎄🎄🎄
